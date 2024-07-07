@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, FlatList, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, Linking } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import axios from 'axios';
+import styled from 'styled-components/native';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 type ProfileScreenRouteProp = RouteProp<{ Profile: { username: string } }, 'Profile'>;
 
@@ -25,7 +28,7 @@ interface Repository {
   name: string;
   language: string;
   description: string;
-  html_url: string; // URL do repositório no GitHub
+  html_url: string;
   created_at: string;
   updated_at: string;
 }
@@ -40,17 +43,15 @@ const ProfileScreen: React.FC<Props> = ({ route }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Busca dados básicos do usuário
         const userResponse = await axios.get(`https://api.github.com/users/${username}`);
         const userData: UserData = userResponse.data;
         setUserData(userData);
 
-        // Busca os repositórios públicos do usuário
         const reposResponse = await axios.get(userData.repos_url);
         const reposData: Repository[] = reposResponse.data;
         setRepositories(reposData);
       } catch (err) {
-        setError('Failed to load user data');
+        setError('Falha ao carregar dados do usuário');
       } finally {
         setLoading(false);
       }
@@ -60,92 +61,153 @@ const ProfileScreen: React.FC<Props> = ({ route }) => {
   }, [username]);
 
   const handleRepositoryPress = (url: string) => {
-    Linking.openURL(url); // Abre o link do repositório no navegador padrão do dispositivo
+    Linking.openURL(url);
   };
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <LoadingContainer><ActivityIndicator size="large" color="#8a2be2" /></LoadingContainer>;
   }
 
   if (error) {
-    return <Text style={styles.errorText}>{error}</Text>;
+    return <ErrorText>{error}</ErrorText>;
   }
 
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'dd/MM/yyyy', { locale: ptBR });
+  };
+
   return (
-    <View style={styles.container}>
+    <Container>
       {userData && (
         <>
-          <Image source={{ uri: userData.avatar_url }} style={styles.avatar} />
-          <Text style={styles.name}>{userData.name}</Text>
-          <Text>{userData.login}</Text>
-          <Text>{userData.location}</Text>
-          <Text>Followers: {userData.followers}</Text>
-          <Text>Public Repos: {userData.public_repos}</Text>
-          <Text style={styles.sectionTitle}>Repositories:</Text>
-          <FlatList
+          <ProfileCard>
+            <Avatar source={{ uri: userData.avatar_url }} />
+            <UserInfo>
+              <Row>
+                <Label>Nome:</Label>
+                <Value>{userData.name}</Value>
+              </Row>
+              <Row>
+                <Label>Nickname:</Label>
+                <Value>@{userData.login}</Value>
+              </Row>
+              <Row>
+                <Label>Localização:</Label>
+                <Value>{userData.location || 'Não informado'}</Value>
+              </Row>
+              <Row>
+                <Label>Seguidores:</Label>
+                <Value>{userData.followers}</Value>
+              </Row>
+              <Row>
+                <Label>Repositórios Públicos:</Label>
+                <Value>{userData.public_repos}</Value>
+              </Row>
+            </UserInfo>
+          </ProfileCard>
+          <SectionTitle>Repositórios:</SectionTitle>
+          <RepositoryList
             data={repositories}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => handleRepositoryPress(item.html_url)}>
-                <View style={styles.repositoryItem}>
-                  <Text style={styles.repositoryName}>{item.name}</Text>
-                  <Text>Language: {item.language}</Text>
-                  <Text>Description: {item.description}</Text>
-                  <Text>Created at: {item.created_at}</Text>
-                  <Text>Last updated: {item.updated_at}</Text>
-                </View>
-              </TouchableOpacity>
+              <RepositoryCard onPress={() => handleRepositoryPress(item.html_url)}>
+                <RepositoryName>{item.name}</RepositoryName>
+                <RepositoryInfo>Linguagem: {item.language}</RepositoryInfo>
+                <RepositoryInfo>Descrição: {item.description}</RepositoryInfo>
+                <RepositoryInfo>Criado em: {formatDate(item.created_at)}</RepositoryInfo>
+                <RepositoryInfo>Última atualização: {formatDate(item.updated_at)}</RepositoryInfo>
+              </RepositoryCard>
             )}
-            contentContainerStyle={styles.repositoryList}
           />
         </>
       )}
-    </View>
+    </Container>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 20,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 20,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  repositoryList: {
-    flexGrow: 1,
-    width: '100%',
-  },
-  repositoryItem: {
-    marginBottom: 10,
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
-  },
-  repositoryName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  errorText: {
-    color: 'red',
-    textAlign: 'center',
-  },
-});
+const Container = styled.View`
+  flex: 1;
+  background-color: #8a2be2;
+  padding: 20px;
+`;
+
+const LoadingContainer = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ProfileCard = styled.View`
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  align-items: center;
+`;
+
+const Avatar = styled.Image`
+  width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  margin-bottom: 20px;
+`;
+
+const UserInfo = styled.View`
+  align-items: center;
+`;
+
+const Row = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
+const Label = styled.Text`
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 5px;
+  color: #8a2be2;
+`;
+
+const Value = styled.Text`
+  font-size: 16px;
+  color: #333;
+`;
+
+const SectionTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  margin-top: 20px;
+  margin-bottom: 10px;
+`;
+
+const RepositoryList = styled.FlatList`
+  flex: 1;
+`;
+
+const RepositoryCard = styled.TouchableOpacity`
+  background-color: #ffffff;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+`;
+
+const RepositoryName = styled.Text`
+  font-size: 16px;
+  font-weight: bold;
+  color: #8a2be2;
+  margin-bottom: 5px;
+`;
+
+const RepositoryInfo = styled.Text`
+  font-size: 14px;
+  color: #333;
+`;
+
+const ErrorText = styled.Text`
+  color: red;
+  text-align: center;
+`;
 
 export default ProfileScreen;

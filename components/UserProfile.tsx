@@ -1,50 +1,86 @@
-import * as React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React from "react";
+import { TouchableOpacity } from "react-native";
+import styled from "styled-components/native";
 
-type UserProfileProps = {
-  name: string;
-  login: string;
-  location: string;
-  avatar_url: string;
-  followers: number;
-  public_repos: number;
-};
+interface UserProfileProps {
+  userData: {
+    name: string;
+    login: string;
+    followers: number;
+    public_repos: number;
+    avatar_url: string;
+  };
+  onNavigateToProfile: () => void;
+}
 
 const UserProfile: React.FC<UserProfileProps> = ({
-  name,
-  login,
-  location,
-  avatar_url,
-  followers,
-  public_repos,
+  userData,
+  onNavigateToProfile,
 }) => {
   return (
-    <View style={styles.container}>
-      <Image source={{ uri: avatar_url }} style={styles.avatar} />
-      <Text style={styles.name}>{name}</Text>
-      <Text>{login}</Text>
-      <Text>{location}</Text>
-      <Text>Followers: {followers}</Text>
-      <Text>Public Repos: {public_repos}</Text>
-    </View>
+    <TouchableOpacity onPress={onNavigateToProfile}>
+      <Container>
+        <UserInfo>
+          <Row>
+            <Label>Nome:</Label>
+            <Value>{userData.name}</Value>
+          </Row>
+          <Row>
+            <Label>Nickname:</Label>
+            <Value>@{userData.login}</Value>
+          </Row>
+          <Row>
+            <Label>Seguidores:</Label>
+            <Value>{userData.followers}</Value>
+          </Row>
+          <Row>
+            <Label>Repositórios Públicos:</Label>
+            <Value>{userData.public_repos}</Value>
+          </Row>
+        </UserInfo>
+        <Avatar source={{ uri: userData.avatar_url }} />
+      </Container>
+    </TouchableOpacity>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    margin: 20,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginVertical: 10,
-  },
-});
+const Container = styled.View`
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const Avatar = styled.Image`
+  width: 100px;
+  height: 100px;
+  border-radius: 50px;
+`;
+
+const UserInfo = styled.View`
+  flex: 1;
+`;
+
+const Row = styled.View`
+  flex-direction: row;
+  align-items: center;
+`;
+
+const Label = styled.Text`
+  font-size: 16px;
+  font-weight: bold;
+  color: #8a2be2; 
+  margin-bottom: 5px;
+  margin-right: 5px;
+`;
+
+const Value = styled.Text`
+  font-size: 16px;
+  color: #333; 
+  align-items: center; 
+`;
 
 export default UserProfile;

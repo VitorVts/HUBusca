@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { View, FlatList, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styled from 'styled-components/native';
 import { useNavigation } from '@react-navigation/native';
@@ -44,36 +44,38 @@ const Recentes: React.FC = () => {
 
   const renderUserItem = ({ item }: { item: UserData }) => {
     return (
-      <TouchableOpacity onPress={() => navigateToProfile(item.login)} style={styles.card}>
-        <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
-        <UserInfo>
-          <Row>
-            <Label>Nome:</Label>
-            <Value>{item.name}</Value>
-          </Row>
-          <Row>
-            <Label>Nickname:</Label>
-            <Value>@{item.login}</Value>
-          </Row>
-          <Row>
-            <Label>Localização:</Label>
-            <Value>{item.location ?? 'Não informado'}</Value>
-          </Row>
-          <Row>
-            <Label>Seguidores:</Label>
-            <Value>{item.followers}</Value>
-          </Row>
-          <Row>
-            <Label>Repositórios Públicos:</Label>
-            <Value>{item.public_repos}</Value>
-          </Row>
-        </UserInfo>
+      <TouchableOpacity onPress={() => navigateToProfile(item.login)}>
+        <Card>
+          <Avatar source={{ uri: item.avatar_url }} />
+          <UserInfo>
+            <Row>
+              <Label>Nome:</Label>
+              <Value>{item.name}</Value>
+            </Row>
+            <Row>
+              <Label>Nickname:</Label>
+              <Value>@{item.login}</Value>
+            </Row>
+            <Row>
+              <Label>Localização:</Label>
+              <Value>{item.location ?? 'Não informado'}</Value>
+            </Row>
+            <Row>
+              <Label>Seguidores:</Label>
+              <Value>{item.followers}</Value>
+            </Row>
+            <Row>
+              <Label>Repositórios Públicos:</Label>
+              <Value>{item.public_repos}</Value>
+            </Row>
+          </UserInfo>
+        </Card>
       </TouchableOpacity>
     );
   };
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <LoadingContainer><ActivityIndicator size="large" color="#ffffff" /></LoadingContainer>;
   }
 
   if (error) {
@@ -87,7 +89,7 @@ const Recentes: React.FC = () => {
         data={recentSearches}
         keyExtractor={(item) => item.login}
         renderItem={renderUserItem}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={{ flexGrow: 1 }}
       />
     </PurpleContainer>
   );
@@ -106,27 +108,27 @@ const Title = styled.Text`
   margin-bottom: 10px;
 `;
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-    width: '100%',
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginRight: 20,
-  },
-  listContainer: {
-    flexGrow: 1,
-    width: '100%',
-  },
-});
+const LoadingContainer = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Card = styled.View`
+  flex-direction: row;
+  align-items: center;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+`;
+
+const Avatar = styled.Image`
+  width: 100px;
+  height: 100px;
+  border-radius: 50px;
+  margin-right: 20px;
+`;
 
 const UserInfo = styled.View`
   flex: 1;
@@ -135,13 +137,13 @@ const UserInfo = styled.View`
 const Row = styled.View`
   flex-direction: row;
   align-items: center;
-  margin-bottom: 5px; 
+  margin-bottom: 5px;
 `;
 
 const Label = styled.Text`
   font-size: 16px;
   font-weight: bold;
-  color: #6a1b9a; 
+  color: #6a1b9a;
 `;
 
 const Value = styled.Text`
