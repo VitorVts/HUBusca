@@ -1,38 +1,50 @@
-import * as React from 'react';
-import { View, TextInput, Button, StyleSheet } from 'react-native';
+import React from 'react';
+import { TextInput, TouchableOpacity } from 'react-native';
+import styled from 'styled-components/native';
+import { Feather } from '@expo/vector-icons'; 
 
-type SearchBarProps = {
+interface SearchBarProps {
   value: string;
   onChange: (text: string) => void;
   onSearch: () => void;
-};
+}
+
+const SearchBarContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin: 20px;
+  
+`;
+
+const SearchInput = styled.TextInput`
+  flex: 1;
+  background-color: white;
+  padding: 10px;
+  border-radius: 8px; 
+  font-size: 20px; 
+  color: #333; 
+`;
+
+const SearchButton = styled.TouchableOpacity`
+  padding: 12px; 
+  border-radius: 8px; 
+  margin-left: 10px; 
+`;
 
 const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch }) => {
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
+    <SearchBarContainer>
+      <SearchInput
         value={value}
         onChangeText={onChange}
-        placeholder="Search GitHub users"
+        placeholder="Buscar Usuário do GitHub"
+        placeholderTextColor="#ccc"
       />
-      <Button title="Search" onPress={onSearch} />
-    </View>
+      <SearchButton onPress={onSearch}>
+        <Feather name="search" size={24} color="white" />
+      </SearchButton>
+    </SearchBarContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    margin: 10,
-  },
-  input: {
-    flex: 1,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    marginRight: 10,
-    padding: 5,
-  },
-});
 
 export default SearchBar;

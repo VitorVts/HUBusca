@@ -2,15 +2,16 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   ActivityIndicator,
-  TouchableOpacity,
-  StyleSheet,
   Text,
+  Dimensions,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import SearchBar from "../components/SearchBar";
-import UserProfile from "../components/UserProfile";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import styled from "styled-components/native";
+import { useNavigation } from "@react-navigation/native";
+import { Feather } from "@expo/vector-icons";
+import TopBar from "../components/TopBar";
+import UserProfile from "../components/UserProfile";
 
 interface UserData {
   name: string;
@@ -43,7 +44,7 @@ const MainScreen: React.FC = () => {
         }
       } catch (error) {
         console.error(
-          "Erro ao carregar pesquisas recentes do AsyncStorage:",
+          "Erro ao carregar pesquisas recentes",
           error
         );
       }
@@ -95,7 +96,7 @@ const MainScreen: React.FC = () => {
   };
 
   const navigateToRecentSearches = () => {
-    navigation.navigate("Stack2"); // Navegação para Stack2Screen
+    navigation.navigate("Recentes");
   };
 
   const saveUserData = async (userData: UserData) => {
@@ -145,61 +146,42 @@ const MainScreen: React.FC = () => {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      {userData && (
-        <TouchableOpacity onPress={() => goToProfileScreen(userData.login)}>
-          <UserProfile
-            name={userData.name}
-            login={userData.login}
-            location={userData.location}
-            avatar_url={userData.avatar_url}
-            followers={userData.followers}
-            public_repos={userData.public_repos}
-          />
-        </TouchableOpacity>
-      )}
-      <SearchBar
-        value={searchQuery}
-        onChange={handleSearchChange}
-        onSearch={handleSearch}
-      />
-      {loading && <ActivityIndicator size="large" color="#0000ff" />}
-      {error && <Text style={styles.errorText}>{error}</Text>}
+  const { height } = Dimensions.get("window");
 
-      <TouchableOpacity
-        style={styles.recentSearchesButton}
-        onPress={navigateToRecentSearches}
-      >
-        <Text style={styles.buttonText}>Ver Pesquisas Recentes</Text>
-      </TouchableOpacity>
-    </View>
+  return (
+    <Container style={{ minHeight: height }}>
+      <TopBar
+        onNavigateToRecentSearches={navigateToRecentSearches}
+        searchQuery={searchQuery}
+        onSearchQueryChange={handleSearchChange}
+        onSearchSubmit={handleSearch}
+      />
+
+      {loading && <ActivityIndicator size="large" color="#0000ff" />}
+      {error && <ErrorText>{error}</ErrorText>}
+      
+      {userData && (
+        <UserProfile
+          userData={userData}
+          onNavigateToProfile={() => goToProfileScreen(userData.login)}
+        />
+      )}
+
+    </Container>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#8a2be2",
-    padding: 20,
-  },
-  errorText: {
-    color: "red",
-    textAlign: "center",
-    marginTop: 20,
-  },
-  recentSearchesButton: {
-    backgroundColor: "#4CAF50",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginTop: 20,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    textAlign: "center",
-  },
-});
+const Container = styled.View`
+  flex: 1;
+  background-color: #8a2be2;
+  padding: 20px;
+  justify-content: flex-start;
+`;
+
+const ErrorText = styled.Text`
+  color: red;
+  text-align: center;
+  margin-top: 20px;
+`;
 
 export default MainScreen;
