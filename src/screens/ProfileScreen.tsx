@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, FlatList, TouchableOpacity, Linking } from 'react-native';
-import { RouteProp } from '@react-navigation/native';
+import { View, ActivityIndicator, FlatList, Linking } from 'react-native';
+import { RouteProp, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import styled from 'styled-components/native';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
 type ProfileScreenRouteProp = RouteProp<{ Profile: { username: string } }, 'Profile'>;
 
 type Props = {
@@ -36,19 +35,19 @@ interface Repository {
 const ProfileScreen: React.FC<Props> = ({ route }) => {
   const { username } = route.params;
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [repositories, setRepositories] = useState<Repository[]>([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userResponse = await axios.get(`https://api.github.com/users/${username}`);
-        const userData: UserData = userResponse.data;
+        const userResponse = await axios.get<UserData>(`https://api.github.com/users/${username}`);
+        const userData = userResponse.data;
         setUserData(userData);
 
-        const reposResponse = await axios.get(userData.repos_url);
-        const reposData: Repository[] = reposResponse.data;
+        const reposResponse = await axios.get<Repository[]>(userData.repos_url);
+        const reposData = reposResponse.data;
         setRepositories(reposData);
       } catch (err) {
         setError('Falha ao carregar dados do usuário');
@@ -64,17 +63,21 @@ const ProfileScreen: React.FC<Props> = ({ route }) => {
     Linking.openURL(url);
   };
 
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'dd/MM/yyyy', { locale: ptBR });
+  };
+
   if (loading) {
-    return <LoadingContainer><ActivityIndicator size="large" color="#8a2be2" /></LoadingContainer>;
+    return (
+      <LoadingContainer>
+        <ActivityIndicator size="large" color="#8a2be2" />
+      </LoadingContainer>
+    );
   }
 
   if (error) {
     return <ErrorText>{error}</ErrorText>;
   }
-
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'dd/MM/yyyy', { locale: ptBR });
-  };
 
   return (
     <Container>
@@ -106,9 +109,9 @@ const ProfileScreen: React.FC<Props> = ({ route }) => {
             </UserInfo>
           </ProfileCard>
           <SectionTitle>Repositórios:</SectionTitle>
-          <RepositoryList
+          <FlatList
             data={repositories}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item: Repository) => item.id.toString()}
             renderItem={({ item }) => (
               <RepositoryCard onPress={() => handleRepositoryPress(item.html_url)}>
                 <RepositoryName>{item.name}</RepositoryName>
@@ -182,7 +185,7 @@ const SectionTitle = styled.Text`
   margin-bottom: 10px;
 `;
 
-const RepositoryList = styled.FlatList`
+const RepositoryList = styled(FlatList as new () => FlatList<Repository>)`
   flex: 1;
 `;
 

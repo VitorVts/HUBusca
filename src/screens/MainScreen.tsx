@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  ActivityIndicator,
-  Text,
-  Dimensions,
-} from "react-native";
+import { View, ActivityIndicator, Text, Dimensions } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import styled from "styled-components/native";
 import { useNavigation } from "@react-navigation/native";
-import { Feather } from "@expo/vector-icons";
+import { StackNavigationProp } from "@react-navigation/stack";
 import TopBar from "../components/TopBar";
 import UserProfile from "../components/UserProfile";
+import { RootStackParamList } from "../types";
 
 interface UserData {
   name: string;
@@ -24,6 +20,8 @@ interface UserData {
   repos_url: string;
 }
 
+type MainScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+
 const MainScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -31,22 +29,17 @@ const MainScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<UserData[]>([]);
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<MainScreenNavigationProp>();
 
   useEffect(() => {
     const loadRecentSearches = async () => {
       try {
-        const recentSearchesString = await AsyncStorage.getItem(
-          "@recentSearches"
-        );
+        const recentSearchesString = await AsyncStorage.getItem("@recentSearches");
         if (recentSearchesString) {
           setRecentSearches(JSON.parse(recentSearchesString));
         }
       } catch (error) {
-        console.error(
-          "Erro ao carregar pesquisas recentes",
-          error
-        );
+        console.error("Erro ao carregar pesquisas recentes", error);
       }
     };
 
@@ -63,9 +56,7 @@ const MainScreen: React.FC = () => {
     setUserData(null);
 
     try {
-      const response = await axios.get(
-        `https://api.github.com/users/${searchQuery}`
-      );
+      const response = await axios.get<UserData>(`https://api.github.com/users/${searchQuery}`);
       const userDataResponse = response.data;
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -73,7 +64,7 @@ const MainScreen: React.FC = () => {
       const userData: UserData = {
         name: userDataResponse.name,
         login: userDataResponse.login,
-        location: userDataResponse.location,
+        location: userDataResponse.location || "",
         avatar_url: userDataResponse.avatar_url,
         id: userDataResponse.id,
         followers: userDataResponse.followers,
@@ -85,7 +76,7 @@ const MainScreen: React.FC = () => {
       saveUserData(userData);
       saveRecentSearch(userData);
     } catch (err) {
-      setError("Failed to load user data");
+      setError("Erro ao carregar dados do Usuário");
     } finally {
       setLoading(false);
     }
@@ -104,27 +95,20 @@ const MainScreen: React.FC = () => {
       await AsyncStorage.setItem("@userData", JSON.stringify(userData));
       console.log("Dados do usuário salvos com sucesso no AsyncStorage.");
     } catch (error) {
-      console.error(
-        "Erro ao salvar os dados do usuário no AsyncStorage:",
-        error
-      );
+      console.error("Erro ao salvar os dados do usuário no AsyncStorage:", error);
     }
   };
 
   const saveRecentSearch = async (userData: UserData) => {
     try {
-      const recentSearchesString = await AsyncStorage.getItem(
-        "@recentSearches"
-      );
+      const recentSearchesString = await AsyncStorage.getItem("@recentSearches");
       let updatedSearches: UserData[] = [];
 
       if (recentSearchesString !== null) {
         updatedSearches = JSON.parse(recentSearchesString);
       }
 
-      const existingIndex = updatedSearches.findIndex(
-        (user) => user.id === userData.id
-      );
+      const existingIndex = updatedSearches.findIndex((user) => user.id === userData.id);
 
       if (existingIndex !== -1) {
         updatedSearches.splice(existingIndex, 1);
@@ -133,16 +117,10 @@ const MainScreen: React.FC = () => {
       updatedSearches.unshift(userData);
       updatedSearches = updatedSearches.slice(0, 5);
 
-      await AsyncStorage.setItem(
-        "@recentSearches",
-        JSON.stringify(updatedSearches)
-      );
+      await AsyncStorage.setItem("@recentSearches", JSON.stringify(updatedSearches));
       setRecentSearches(updatedSearches);
     } catch (error) {
-      console.error(
-        "Erro ao salvar a pesquisa recente no AsyncStorage:",
-        error
-      );
+      console.error("Erro ao salvar a pesquisa recente no AsyncStorage:", error);
     }
   };
 
@@ -166,7 +144,6 @@ const MainScreen: React.FC = () => {
           onNavigateToProfile={() => goToProfileScreen(userData.login)}
         />
       )}
-
     </Container>
   );
 };

@@ -13,7 +13,6 @@ const SearchBarContainer = styled.View`
   flex-direction: row;
   align-items: center;
   margin: 20px;
-  
 `;
 
 const SearchInput = styled.TextInput`

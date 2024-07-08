@@ -5,8 +5,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import MainScreen from '../screens/MainScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import Recentes from '../screens/Recentes';
+import { RootStackParamList } from '../types'; // Importe o RootStackParamList
 
-const MainStack = createStackNavigator();
+const MainStack = createStackNavigator<RootStackParamList>();
 
 const MainStackScreen: React.FC = () => {
   const screenOptions: StackNavigationOptions = {

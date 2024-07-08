@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { View, FlatList, TouchableOpacity, ActivityIndicator, Image, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styled from 'styled-components/native';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types';
 
 interface UserData {
   name: string;
@@ -14,11 +16,13 @@ interface UserData {
   public_repos: number;
 }
 
+type RecentesScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Recentes'>;
+
 const Recentes: React.FC = () => {
   const [recentSearches, setRecentSearches] = useState<UserData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const navigation = useNavigation();
+  const navigation = useNavigation<RecentesScreenNavigationProp>();
 
   useEffect(() => {
     loadRecentSearches();
@@ -42,40 +46,42 @@ const Recentes: React.FC = () => {
     navigation.navigate('Profile', { username });
   };
 
-  const renderUserItem = ({ item }: { item: UserData }) => {
-    return (
-      <TouchableOpacity onPress={() => navigateToProfile(item.login)}>
-        <Card>
-          <Avatar source={{ uri: item.avatar_url }} />
-          <UserInfo>
-            <Row>
-              <Label>Nome:</Label>
-              <Value>{item.name}</Value>
-            </Row>
-            <Row>
-              <Label>Nickname:</Label>
-              <Value>@{item.login}</Value>
-            </Row>
-            <Row>
-              <Label>Localização:</Label>
-              <Value>{item.location ?? 'Não informado'}</Value>
-            </Row>
-            <Row>
-              <Label>Seguidores:</Label>
-              <Value>{item.followers}</Value>
-            </Row>
-            <Row>
-              <Label>Repositórios Públicos:</Label>
-              <Value>{item.public_repos}</Value>
-            </Row>
-          </UserInfo>
-        </Card>
-      </TouchableOpacity>
-    );
-  };
+  const renderUserItem = ({ item }: { item: UserData }) => (
+    <TouchableOpacity onPress={() => navigateToProfile(item.login)}>
+      <Card>
+        <Avatar source={{ uri: item.avatar_url }} />
+        <UserInfo>
+          <Row>
+            <Label>Nome:</Label>
+            <Value>{item.name}</Value>
+          </Row>
+          <Row>
+            <Label>Nickname:</Label>
+            <Value>@{item.login}</Value>
+          </Row>
+          <Row>
+            <Label>Localização:</Label>
+            <Value>{item.location ?? 'Não informado'}</Value>
+          </Row>
+          <Row>
+            <Label>Seguidores:</Label>
+            <Value>{item.followers}</Value>
+          </Row>
+          <Row>
+            <Label>Repositórios Públicos:</Label>
+            <Value>{item.public_repos}</Value>
+          </Row>
+        </UserInfo>
+      </Card>
+    </TouchableOpacity>
+  );
 
   if (loading) {
-    return <LoadingContainer><ActivityIndicator size="large" color="#ffffff" /></LoadingContainer>;
+    return (
+      <LoadingContainer>
+        <ActivityIndicator size="large" color="#ffffff" />
+      </LoadingContainer>
+    );
   }
 
   if (error) {
@@ -84,7 +90,7 @@ const Recentes: React.FC = () => {
 
   return (
     <PurpleContainer>
-      <Title>Recent Searches:</Title>
+      <Title>Pesquisas Recentes:</Title>
       <FlatList
         data={recentSearches}
         keyExtractor={(item) => item.login}

@@ -72,15 +72,14 @@ const Row = styled.View`
 const Label = styled.Text`
   font-size: 16px;
   font-weight: bold;
-  color: #8a2be2; 
+  color: #8a2be2;
   margin-bottom: 5px;
   margin-right: 5px;
 `;
 
 const Value = styled.Text`
   font-size: 16px;
-  color: #333; 
-  align-items: center; 
+  color: #333;
 `;
 
 export default UserProfile;
