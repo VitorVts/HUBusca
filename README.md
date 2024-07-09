@@ -40,4 +40,5 @@ Este aplicativo permite buscar usuários do GitHub pelo nome de usuário e exibi
 - **TypeScript**: Para tipagem estática e melhor manutenção do código.
 - **API do GitHub**: Para buscar e exibir os dados dos usuários.
 
-![Descrição da Imagem](https://drive.google.com/uc?id=1yUFKTFuXLMgGzBv8_78eYApyvXOqcVcy)
+## Prints do App em Execução
+![](https://drive.google.com/uc?id=1yUFKTFuXLMgGzBv8_78eYApyvXOqcVcy)
