@@ -7,7 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import TopBar from "../components/TopBar";
 import UserProfile from "../components/UserProfile";
-import { RootStackParamList } from "../types";
+import { RootStackParamList } from "../types/RootStackParamList";
 
 interface UserData {
   name: string;
